@@ -28,23 +28,34 @@ This script fetches waste collection data from Time Kommune and publishes it to 
    npm install
    ```
 
-2. **Configure the script:**
-   Edit `renovasjon-mqtt.js` and update the configuration:
-   ```javascript
-   const CONFIG = {
-     mqtt: {
-       broker: 'mqtt://localhost:1883', // Your MQTT broker URL
-       username: '', // Optional: MQTT username
-       password: '', // Optional: MQTT password
-     },
-     renovasjon: {
-       // These settings work for Time Kommune
-       eiendomId: '0320890b-878f-4956-84d7-be6064061dfd', // Your property ID (example: Arne Garborgs Veg 30)
-     },
-   };
+2. **Find your property ID:**
+   ```bash
+   node renovasjon-find-property.js "Your Address"
+   ```
+   Copy the `eiendomId` from the output.
+
+3. **Configure the script:**
+   Copy the example config and edit it:
+   ```bash
+   cp config.example.json config.json
    ```
 
-3. **Run the script:**
+   Edit `config.json` with your settings:
+   ```json
+   {
+     "mqtt": {
+       "broker": "mqtt://localhost:1883",
+       "username": "",
+       "password": ""
+     },
+     "renovasjon": {
+       "eiendomId": "YOUR_PROPERTY_ID_HERE"
+     },
+     "updateInterval": 3600000
+   }
+   ```
+
+4. **Run the script:**
    ```bash
    node renovasjon-mqtt.js
    ```
@@ -118,8 +129,10 @@ node renovasjon-find-property.js "Your Street Name"
 
 Example:
 ```bash
-node renovasjon-find-property.js "Ola Barkveds Veg 47 B"
+node renovasjon-find-property.js "Arne Garborgs Veg 30"
 ```
+
+This will find the Time rådhus (municipality building).
 
 The script will display:
 - All matching properties
@@ -174,7 +187,9 @@ content: |
 
 ## Troubleshooting
 
-- **MQTT connection fails**: Check your broker URL and credentials
+- **"Error loading config.json"**: Copy `config.example.json` to `config.json` and configure it with your settings
+- **"eiendomId is required"**: Use `renovasjon-find-property.js` to find your property ID
+- **MQTT connection fails**: Check your broker URL and credentials in `config.json`
 - **No sensors appear**: Verify MQTT Discovery is enabled in Home Assistant
 - **No data**: Check the script logs for API errors
 - **Token errors**: The script automatically gets a new token if needed

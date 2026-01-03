@@ -1,0 +1,12 @@
+{
+  "mqtt": {
+    "broker": "mqtt://localhost:1883",
+    "username": "",
+    "password": ""
+  },
+  "renovasjon": {
+    "eiendomId": "0320890b-878f-4956-84d7-be6064061dfd",
+    "_comment": "Example: Time rådhus (Arne Garborgs Veg 30). Use renovasjon-find-property.js to find your property ID."
+  },
+  "updateInterval": 3600000
+}

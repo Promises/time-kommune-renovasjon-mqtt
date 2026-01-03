@@ -1,21 +1,42 @@
 const mqtt = require('mqtt');
 const https = require('https');
+const fs = require('fs');
+const path = require('path');
 
-// Configuration
+// Load configuration
+let userConfig;
+try {
+  const configPath = path.join(__dirname, 'config.json');
+  userConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+} catch (error) {
+  console.error('❌ Error loading config.json');
+  console.error('   Please copy config.example.json to config.json and update with your settings.');
+  console.error('   Error:', error.message);
+  process.exit(1);
+}
+
+// Merge with defaults
 const CONFIG = {
   mqtt: {
-    broker: 'mqtt://localhost:1883', // Change to your MQTT broker
-    username: '', // Optional
-    password: '', // Optional
+    broker: userConfig.mqtt?.broker || 'mqtt://localhost:1883',
+    username: userConfig.mqtt?.username || '',
+    password: userConfig.mqtt?.password || '',
   },
   renovasjon: {
     baseUrl: 'https://renovasjon.time.kommune.no:8055',
     applikasjonsId: '2de50fc8-4ab7-426b-99cd-a5ddd0de71d1',
     oppdragsgiverId: '100',
-    eiendomId: '0320890b-878f-4956-84d7-be6064061dfd', // Example: Arne Garborgs Veg 30
+    eiendomId: userConfig.renovasjon?.eiendomId,
   },
-  updateInterval: 3600000, // Update every hour (in milliseconds)
+  updateInterval: userConfig.updateInterval || 3600000,
 };
+
+// Validate required config
+if (!CONFIG.renovasjon.eiendomId) {
+  console.error('❌ Error: eiendomId is required in config.json');
+  console.error('   Use renovasjon-find-property.js to find your property ID.');
+  process.exit(1);
+}
 
 let authToken = null;
 
