@@ -50,12 +50,11 @@ This script fetches waste collection data from Time Kommune and publishes it to 
      },
      "renovasjon": {
        "eiendomId": "YOUR_PROPERTY_ID_HERE"
-     },
-     "updateInterval": 3600000
+     }
    }
    ```
 
-4. **Run the script:**
+4. **Test the script:**
    ```bash
    node renovasjon-mqtt.js
    ```
@@ -64,47 +63,60 @@ This script fetches waste collection data from Time Kommune and publishes it to 
    - Authenticate with the renovasjon API
    - Connect to your MQTT broker
    - Create the device and sensors in Home Assistant
-   - Update data every hour
+   - Publish data and exit (designed to be run periodically by systemd timer)
 
 ## Running as a Service
 
-### Using systemd (Linux/Raspberry Pi):
+### Using systemd timer (Linux/Raspberry Pi) - Recommended:
 
-Create `/etc/systemd/system/renovasjon-mqtt.service`:
+This project includes systemd service and timer files for efficient periodic updates.
 
-```ini
-[Unit]
-Description=Renovasjon MQTT Bridge
-After=network.target mosquitto.service
+1. **Copy the service files** (update paths and user first):
+   ```bash
+   # Edit the service file to set your user and paths
+   sudo cp renovasjon-mqtt.service /etc/systemd/system/
+   sudo cp renovasjon-mqtt.timer /etc/systemd/system/
 
-[Service]
-Type=simple
-User=YOUR_USER
-WorkingDirectory=/path/to/time-kommune-renovasjon-mqtt
-ExecStart=/usr/bin/node /path/to/time-kommune-renovasjon-mqtt/renovasjon-mqtt.js
-Restart=always
-RestartSec=10
+   # Update YOUR_USER in the service file
+   sudo nano /etc/systemd/system/renovasjon-mqtt.service
+   ```
 
-[Install]
-WantedBy=multi-user.target
-```
+2. **Enable and start the timer**:
+   ```bash
+   sudo systemctl daemon-reload
+   sudo systemctl enable renovasjon-mqtt.timer
+   sudo systemctl start renovasjon-mqtt.timer
+   ```
 
-Enable and start:
-```bash
-sudo systemctl enable renovasjon-mqtt
-sudo systemctl start renovasjon-mqtt
-sudo systemctl status renovasjon-mqtt
-```
+3. **Check status**:
+   ```bash
+   # Check timer status
+   sudo systemctl status renovasjon-mqtt.timer
 
-### Using Docker (alternative):
+   # See when next run is scheduled
+   sudo systemctl list-timers renovasjon-mqtt.timer
+
+   # Manually trigger an update
+   sudo systemctl start renovasjon-mqtt.service
+
+   # View logs
+   sudo journalctl -u renovasjon-mqtt.service -f
+   ```
+
+The timer runs hourly and persists across reboots. It's more efficient than running continuously since it only uses resources when updating.
+
+### Using Docker with cron (alternative):
 
 Create `Dockerfile`:
 ```dockerfile
 FROM node:20-alpine
 WORKDIR /app
-COPY package.json renovasjon-mqtt.js ./
-RUN npm install
-CMD ["node", "renovasjon-mqtt.js"]
+COPY package.json renovasjon-mqtt.js config.json ./
+RUN npm install && \
+    apk add --no-cache dcron
+# Run every hour
+RUN echo "0 * * * * cd /app && node renovasjon-mqtt.js >> /var/log/renovasjon.log 2>&1" > /etc/crontabs/root
+CMD ["crond", "-f", "-l", "2"]
 ```
 
 Build and run:
@@ -201,8 +213,11 @@ View logs:
 # If running directly
 node renovasjon-mqtt.js
 
-# If using systemd
-sudo journalctl -u renovasjon-mqtt -f
+# If using systemd timer
+sudo journalctl -u renovasjon-mqtt.service -f
+
+# See recent runs
+sudo journalctl -u renovasjon-mqtt.service -n 50
 
 # If using Docker
 docker logs -f renovasjon-mqtt

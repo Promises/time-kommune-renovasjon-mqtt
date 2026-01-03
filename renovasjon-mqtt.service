@@ -1,0 +1,12 @@
+[Unit]
+Description=Renovasjon MQTT Bridge
+After=network.target
+
+[Service]
+Type=oneshot
+User=YOUR_USER
+WorkingDirectory=/opt/renovasjon-mqtt
+ExecStart=/usr/bin/node /opt/renovasjon-mqtt/renovasjon-mqtt.js
+
+[Install]
+WantedBy=multi-user.target

@@ -28,7 +28,6 @@ const CONFIG = {
     oppdragsgiverId: '100',
     eiendomId: userConfig.renovasjon?.eiendomId,
   },
-  updateInterval: userConfig.updateInterval || 3600000,
 };
 
 // Validate required config
@@ -216,10 +215,17 @@ async function updateSensors() {
 
       console.log(`Updated ${wasteType}: ${formattedDate} (${daysUntil} days)`);
     });
+
+    // Wait a bit for messages to be sent, then exit
+    setTimeout(() => {
+      console.log('Update complete, closing connection...');
+      mqttClient.end();
+      process.exit(0);
+    }, 2000);
   } catch (error) {
     console.error('Error updating sensors:', error);
-    // Clear token so we get a fresh one on next update
-    authToken = null;
+    mqttClient.end();
+    process.exit(1);
   }
 }
 
@@ -240,15 +246,13 @@ function main() {
     // Publish discovery configs
     publishDiscoveryConfig();
 
-    // Update sensors immediately
+    // Update sensors and exit
     updateSensors();
-
-    // Set up periodic updates
-    setInterval(updateSensors, CONFIG.updateInterval);
   });
 
   mqttClient.on('error', (error) => {
     console.error('MQTT error:', error);
+    process.exit(1);
   });
 }
 
