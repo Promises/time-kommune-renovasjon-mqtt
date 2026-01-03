@@ -1,0 +1,12 @@
+{
+  "name": "renovasjon-mqtt",
+  "version": "1.0.0",
+  "description": "Renovasjon data to Home Assistant via MQTT",
+  "main": "renovasjon-mqtt.js",
+  "scripts": {
+    "start": "node renovasjon-mqtt.js"
+  },
+  "dependencies": {
+    "mqtt": "^5.3.4"
+  }
+}
