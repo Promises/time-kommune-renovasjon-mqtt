@@ -134,7 +134,11 @@ function getNextCollectionDate(data, wasteType) {
   const now = new Date();
   const collections = data
     .filter(item => item.fraksjon === wasteType)
-    .map(item => new Date(item.dato))
+    .map(item => {
+      // Parse as UTC to avoid timezone issues
+      const dateStr = item.dato.split('T')[0];
+      return new Date(dateStr + 'T00:00:00Z');
+    })
     .filter(date => date >= now)
     .sort((a, b) => a - b);
 
