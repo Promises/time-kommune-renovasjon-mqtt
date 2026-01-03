@@ -5,10 +5,11 @@ This script fetches waste collection data from Time Kommune and publishes it to 
 ## Features
 
 - Creates a device called "Tømming" in Home Assistant
-- 3 sensors showing next collection date for each waste type:
+- 3 sensors showing days until next collection for each waste type:
   - Matavfall (Food waste)
   - Papir (Paper)
   - Restavfall (Residual waste)
+- Sensor state: Number of days until collection (e.g., "6 dager")
 - Each sensor includes attributes:
   - `next_collection`: Date in YYYY-MM-DD format
   - `days_until`: Number of days until collection
@@ -183,18 +184,18 @@ entities:
     name: Restavfall
 ```
 
-Or use a custom card to show days until collection:
+Or use a markdown card to show both days and dates:
 
 ```yaml
 type: markdown
 content: |
   ## Neste tømming
 
-  **Matavfall:** {{ states('sensor.matavfall') }} ({{ state_attr('sensor.matavfall', 'days_until') }} dager)
+  **Matavfall:** {{ states('sensor.matavfall') }} dager ({{ state_attr('sensor.matavfall', 'next_collection') }})
 
-  **Papir:** {{ states('sensor.papir') }} ({{ state_attr('sensor.papir', 'days_until') }} dager)
+  **Papir:** {{ states('sensor.papir') }} dager ({{ state_attr('sensor.papir', 'next_collection') }})
 
-  **Restavfall:** {{ states('sensor.restavfall') }} ({{ state_attr('sensor.restavfall', 'days_until') }} dager)
+  **Restavfall:** {{ states('sensor.restavfall') }} dager ({{ state_attr('sensor.restavfall', 'next_collection') }})
 ```
 
 ## Troubleshooting

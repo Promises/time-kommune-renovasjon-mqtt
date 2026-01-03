@@ -179,6 +179,8 @@ function publishDiscoveryConfig() {
       state_topic: `homeassistant/sensor/tomming/${sensorId}/state`,
       json_attributes_topic: `homeassistant/sensor/tomming/${sensorId}/attributes`,
       icon: config.icon,
+      unit_of_measurement: 'dager',
+      state_class: 'measurement',
       device: deviceConfig,
     };
 
@@ -204,9 +206,9 @@ async function updateSensors() {
       const formattedDate = formatDate(nextDate);
       const daysUntil = getDaysUntil(nextDate);
 
-      // Publish state (the date)
+      // Publish state (days until collection)
       const stateTopic = `homeassistant/sensor/tomming/${sensorId}/state`;
-      mqttClient.publish(stateTopic, formattedDate);
+      mqttClient.publish(stateTopic, String(daysUntil));
 
       // Publish attributes
       const attributesTopic = `homeassistant/sensor/tomming/${sensorId}/attributes`;
@@ -217,7 +219,7 @@ async function updateSensors() {
       };
       mqttClient.publish(attributesTopic, JSON.stringify(attributes));
 
-      console.log(`Updated ${wasteType}: ${formattedDate} (${daysUntil} days)`);
+      console.log(`Updated ${wasteType}: ${daysUntil} days (${formattedDate})`);
     });
 
     // Wait a bit for messages to be sent, then exit
