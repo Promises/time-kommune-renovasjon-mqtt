@@ -43,6 +43,7 @@ const WASTE_TYPES = {
   'Matavfall': { name: 'Matavfall', icon: 'mdi:food-apple' },
   'Papir': { name: 'Papir', icon: 'mdi:newspaper-variant' },
   'Restavfall': { name: 'Restavfall', icon: 'mdi:trash-can' },
+  'Glassemballasje': { name: 'Glass- og Metallemballasje', icon: 'mdi:bottle-wine-outline' },
 };
 
 let mqttClient;
